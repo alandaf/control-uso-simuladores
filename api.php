@@ -1,4 +1,9 @@
 <?php
+// Disable displaying PHP errors to the client to avoid information disclosure
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+error_reporting(0);
+
 // Secure Session Configuration
 $cookie_secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
 session_start([
@@ -14,7 +19,13 @@ date_default_timezone_set('America/Santiago');
 header('Content-Type: application/json');
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     $http_origin = $_SERVER['HTTP_ORIGIN'];
-    if (strpos($http_origin, 'localhost') !== false || strpos($http_origin, 'ippilotopardo.cl') !== false) {
+    $allowed_origins = [
+        'http://localhost',
+        'http://localhost:8080',
+        'https://ippilotopardo.cl',
+        'https://www.ippilotopardo.cl'
+    ];
+    if (in_array($http_origin, $allowed_origins, true)) {
         header("Access-Control-Allow-Origin: $http_origin");
         header('Access-Control-Allow-Credentials: true');
     }
@@ -274,6 +285,10 @@ switch ($action) {
 
         if ($new_username === '' || $new_password === '') {
             sendResponse(['success' => false, 'error' => 'El usuario y la contraseña no pueden estar vacíos'], 400);
+        }
+
+        if (strlen($new_password) < 6) {
+            sendResponse(['success' => false, 'error' => 'La contraseña debe tener al menos 6 caracteres'], 400);
         }
 
         try {
