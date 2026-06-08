@@ -1,0 +1,19 @@
+# Redirect HTTP to HTTPS (standard production rule)
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Block sensitive extensions
+<FilesMatch "\.(sqlite|db|sql|xlsx|py|zip|md|env)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block access to migrate_to_mysql.php
+<Files "migrate_to_mysql.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Deny public access to scratch files
+RedirectMatch 403 /scratch/.*

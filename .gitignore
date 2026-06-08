@@ -1,0 +1,20 @@
+# Ignore databases and backup/sensitive files
+*.sqlite
+*.db
+*.sql
+*.xlsx
+*.zip
+
+# Ignore temporary/development scratch folders
+scratch/
+~$*
+
+# Ignore Python migration/seed scripts
+*.py
+
+# Ignore migration utilities
+migrate_to_mysql.php
+
+# Ignore environment credentials files
+.env
+
