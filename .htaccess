@@ -35,6 +35,9 @@ RedirectMatch 403 /scratch/.*
     # Restricts API usage permissions
     Header set Permissions-Policy "geolocation=(), camera=(), microphone=()"
 
+    # Strict-Transport-Security (HSTS) to prevent SSL stripping
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
     # Content Security Policy (CSP) allowing only trusted local and CDN resources
     Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://unpkg.com; img-src 'self' data:; connect-src 'self';"
 </IfModule>

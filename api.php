@@ -148,10 +148,26 @@ function fetchAndCacheHolidays($year) {
 if (file_exists(__DIR__ . '/.env')) {
     $lines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
+        $line = trim($line);
+        if ($line === '' || strpos($line, '#') === 0) {
+            continue;
+        }
         $parts = explode('=', $line, 2);
         if (count($parts) === 2) {
-            $_ENV[trim($parts[0])] = trim($parts[1]);
+            $key = trim($parts[0]);
+            $value = trim($parts[1]);
+            // Strip inline comments if they exist and are not inside quotes
+            if (strpos($value, '#') !== false) {
+                if (!preg_match('/^([\'"]).*\1$/', $value)) {
+                    $val_parts = explode('#', $value, 2);
+                    $value = trim($val_parts[0]);
+                }
+            }
+            // Strip outer quotes if present
+            if (preg_match('/^([\'"])(.*)\1$/', $value, $matches)) {
+                $value = $matches[2];
+            }
+            $_ENV[$key] = $value;
         }
     }
 }
@@ -197,6 +213,15 @@ try {
 }
 
 $action = $_GET['action'] ?? '';
+
+// Set Cache-Control header depending on action to allow caching of static-like endpoints
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (in_array($action, ['get_config', 'get_feriados', 'get_areas', 'get_params'])) {
+        header('Cache-Control: public, max-age=3600');
+    } else {
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+    }
+}
 
 // Helper to return JSON and exit
 function sendResponse($data, $statusCode = 200) {
