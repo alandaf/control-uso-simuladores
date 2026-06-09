@@ -183,6 +183,7 @@ try {
     $db = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $db->exec("SET NAMES utf8mb4");
     $db->exec("CREATE TABLE IF NOT EXISTS configuracion_anual (
         year INT PRIMARY KEY,
         fecha_inicio VARCHAR(10) NOT NULL,
