@@ -185,7 +185,6 @@ function initEventListeners() {
                 const result = await handleFetchResponse(res);
                 if (result.success) {
                     showToast('Configuración anual guardada con éxito', 'success');
-                    formConfigAnual.reset();
                     renderConfigParams();
                 } else {
                     showToast(result.error || 'Error al guardar configuración', 'danger');
@@ -197,6 +196,26 @@ function initEventListeners() {
                 }
             }
         });
+
+        const cfgYearInput = document.getElementById('cfg-year');
+        if (cfgYearInput) {
+            cfgYearInput.addEventListener('input', () => {
+                const yr = parseInt(cfgYearInput.value);
+                if (!yr) return;
+                const config = state.yearlyConfigs?.find(c => parseInt(c.year) === yr);
+                if (config) {
+                    document.getElementById('cfg-fecha-inicio').value = config.fecha_inicio;
+                    document.getElementById('cfg-fecha-fin').value = config.fecha_fin;
+                    document.getElementById('cfg-horas-diarias').value = config.horas_diarias;
+                    document.getElementById('cfg-dias-sin-clases').value = config.dias_sin_clases;
+                } else {
+                    document.getElementById('cfg-fecha-inicio').value = '03-01';
+                    document.getElementById('cfg-fecha-fin').value = '12-01';
+                    document.getElementById('cfg-horas-diarias').value = '8';
+                    document.getElementById('cfg-dias-sin-clases').value = '0';
+                }
+            });
+        }
     }
 
     // Change Admin Credentials Form
@@ -1139,6 +1158,7 @@ async function renderConfigParams() {
             const res = await fetch('api.php?action=get_config');
             const data = await res.json();
             if (data.success && data.configs) {
+                state.yearlyConfigs = data.configs;
                 configList.innerHTML = '';
                 if (data.configs.length === 0) {
                     configList.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 0.75rem;">Sin configuraciones registradas</td></tr>';
