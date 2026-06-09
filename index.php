@@ -401,12 +401,8 @@ if (empty($_SESSION['csrf_token'])) {
                             <input type="number" id="cfg-horas-diarias" placeholder="8" required min="1" max="24" step="0.5" style="width: 100%;">
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.85rem; font-weight: 500;">Fines de Semana</label>
-                            <input type="number" id="cfg-descuento-fines-semana" placeholder="Opcional (Ej: 39)" min="0" max="100" style="width: 100%;">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.85rem; font-weight: 500;">Feriados</label>
-                            <input type="number" id="cfg-descuento-feriados" placeholder="Opcional (Ej: 10)" min="0" max="50" style="width: 100%;">
+                            <label style="font-size: 0.85rem; font-weight: 500;">Días Sin Clases</label>
+                            <input type="number" id="cfg-dias-sin-clases" placeholder="Ej: 10 (vacaciones, etc.)" min="0" max="150" style="width: 100%;">
                         </div>
                         <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; height: 42px;"><i aria-hidden="true" data-lucide="save" style="width:16px; height:16px; margin-right:5px;"></i> Guardar</button>
                     </form>
@@ -419,8 +415,7 @@ if (empty($_SESSION['csrf_token'])) {
                                     <th style="padding: 0.75rem;">Fecha Inicio</th>
                                     <th style="padding: 0.75rem;">Fecha Fin</th>
                                     <th style="padding: 0.75rem;">Horas Disponibilidad</th>
-                                    <th style="padding: 0.75rem;">Descuento Fines de Semana</th>
-                                    <th style="padding: 0.75rem;">Descuento Feriados</th>
+                                    <th style="padding: 0.75rem;">Días Hábiles Sin Clases</th>
                                 </tr>
                             </thead>
                             <tbody id="config-anual-list">

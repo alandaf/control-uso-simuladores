@@ -174,14 +174,13 @@ function initEventListeners() {
             const fecha_inicio = document.getElementById('cfg-fecha-inicio').value.trim();
             const fecha_fin = document.getElementById('cfg-fecha-fin').value.trim();
             const horas_diarias = parseFloat(document.getElementById('cfg-horas-diarias').value);
-            const descuento_fines_semana = parseInt(document.getElementById('cfg-descuento-fines-semana').value) || 0;
-            const descuento_feriados = parseInt(document.getElementById('cfg-descuento-feriados').value) || 0;
+            const dias_sin_clases = parseInt(document.getElementById('cfg-dias-sin-clases').value) || 0;
 
             try {
                 const res = await fetch('api.php?action=save_config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ year, fecha_inicio, fecha_fin, horas_diarias, descuento_fines_semana, descuento_feriados })
+                    body: JSON.stringify({ year, fecha_inicio, fecha_fin, horas_diarias, dias_sin_clases })
                 });
                 const result = await handleFetchResponse(res);
                 if (result.success) {
@@ -1135,28 +1134,26 @@ async function renderConfigParams() {
     // Fetch and render yearly config
     const configList = document.getElementById('config-anual-list');
     if (configList) {
-        configList.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 0.75rem;">Cargando...</td></tr>';
+        configList.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 0.75rem;">Cargando...</td></tr>';
         try {
             const res = await fetch('api.php?action=get_config');
             const data = await res.json();
             if (data.success && data.configs) {
                 configList.innerHTML = '';
                 if (data.configs.length === 0) {
-                    configList.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 0.75rem;">Sin configuraciones registradas</td></tr>';
+                    configList.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 0.75rem;">Sin configuraciones registradas</td></tr>';
                 } else {
                     data.configs.forEach(cfg => {
                         const tr = document.createElement('tr');
                         tr.style.borderBottom = '1px solid var(--border-color)';
                         tr.style.color = 'var(--text-primary)';
-                        const desc_w_text = parseInt(cfg.descuento_fines_semana) > 0 ? `${cfg.descuento_fines_semana} días` : '<span style="color:var(--text-secondary); font-style:italic;">Automático</span>';
-                        const desc_h_text = parseInt(cfg.descuento_feriados) > 0 ? `${cfg.descuento_feriados} días` : '<span style="color:var(--text-secondary); font-style:italic;">Automático</span>';
+                        const dias_sin_clases_text = parseInt(cfg.dias_sin_clases) > 0 ? `${cfg.dias_sin_clases} días` : '<span style="color:var(--text-secondary); font-style:italic;">0</span>';
                         tr.innerHTML = `
                             <td style="padding: 0.75rem;"><strong>${cfg.year}</strong></td>
                             <td style="padding: 0.75rem;">${cfg.fecha_inicio}</td>
                             <td style="padding: 0.75rem;">${cfg.fecha_fin}</td>
                             <td style="padding: 0.75rem;">${cfg.horas_diarias} hrs/día</td>
-                            <td style="padding: 0.75rem;">${desc_w_text}</td>
-                            <td style="padding: 0.75rem;">${desc_h_text}</td>
+                            <td style="padding: 0.75rem;">${dias_sin_clases_text}</td>
                         `;
                         configList.appendChild(tr);
                     });
@@ -1164,7 +1161,7 @@ async function renderConfigParams() {
             }
         } catch (err) {
             console.error("Error al cargar configuraciones anuales", err);
-            configList.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger); padding: 0.75rem;">Error al cargar</td></tr>';
+            configList.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger); padding: 0.75rem;">Error al cargar</td></tr>';
         }
     }
     lucide.createIcons();
