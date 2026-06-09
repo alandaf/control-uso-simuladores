@@ -383,7 +383,7 @@ if (empty($_SESSION['csrf_token'])) {
                 <!-- Panel Configuración de Disponibilidad Anual -->
                 <div class="chart-card" style="grid-column: 1 / -1;">
                     <h3><i aria-hidden="true" data-lucide="calendar"></i> Disponibilidad Anual del Simulador</h3>
-                    <form id="form-config-anual" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) auto; gap: 1rem; align-items: end;">
+                    <form id="form-config-anual" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) auto; gap: 1rem; align-items: end;">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label style="font-size: 0.85rem; font-weight: 500;">Año</label>
                             <input type="number" id="cfg-year" placeholder="Ej: 2026" required min="2020" max="2100" style="width: 100%;">
@@ -397,10 +397,18 @@ if (empty($_SESSION['csrf_token'])) {
                             <input type="text" id="cfg-fecha-fin" placeholder="12-01" required pattern="^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$" title="Formato MM-DD, ej: 12-01" style="width: 100%;">
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.85rem; font-weight: 500;">Disponibilidad Diaria (Horas)</label>
+                            <label style="font-size: 0.85rem; font-weight: 500;">Horas Diarias</label>
                             <input type="number" id="cfg-horas-diarias" placeholder="8" required min="1" max="24" step="0.5" style="width: 100%;">
                         </div>
-                        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; height: 42px;"><i aria-hidden="true" data-lucide="save" style="width:16px; height:16px; margin-right:5px;"></i> Guardar Configuración</button>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.85rem; font-weight: 500;">Fines de Semana</label>
+                            <input type="number" id="cfg-descuento-fines-semana" placeholder="Opcional (Ej: 39)" min="0" max="100" style="width: 100%;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.85rem; font-weight: 500;">Feriados</label>
+                            <input type="number" id="cfg-descuento-feriados" placeholder="Opcional (Ej: 10)" min="0" max="50" style="width: 100%;">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; height: 42px;"><i aria-hidden="true" data-lucide="save" style="width:16px; height:16px; margin-right:5px;"></i> Guardar</button>
                     </form>
                     
                     <div style="margin-top: 1.5rem; overflow-x: auto;">
@@ -410,7 +418,9 @@ if (empty($_SESSION['csrf_token'])) {
                                     <th style="padding: 0.75rem;">Año</th>
                                     <th style="padding: 0.75rem;">Fecha Inicio</th>
                                     <th style="padding: 0.75rem;">Fecha Fin</th>
-                                    <th style="padding: 0.75rem;">Horas Disponibilidad Diaria</th>
+                                    <th style="padding: 0.75rem;">Horas Disponibilidad</th>
+                                    <th style="padding: 0.75rem;">Descuento Fines de Semana</th>
+                                    <th style="padding: 0.75rem;">Descuento Feriados</th>
                                 </tr>
                             </thead>
                             <tbody id="config-anual-list">

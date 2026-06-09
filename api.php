@@ -188,9 +188,19 @@ try {
         year INT PRIMARY KEY,
         fecha_inicio VARCHAR(10) NOT NULL,
         fecha_fin VARCHAR(10) NOT NULL,
-        horas_diarias DECIMAL(10,2) NOT NULL
+        horas_diarias DECIMAL(10,2) NOT NULL,
+        descuento_fines_semana INT DEFAULT 0,
+        descuento_feriados INT DEFAULT 0
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-    $db->exec("CREATE TABLE IF NOT EXISTS feriados (
+     // Auto-migration columns check
+     try {
+         $db->exec("ALTER TABLE configuracion_anual ADD COLUMN descuento_fines_semana INT DEFAULT 0");
+     } catch (PDOException $e) {}
+     try {
+         $db->exec("ALTER TABLE configuracion_anual ADD COLUMN descuento_feriados INT DEFAULT 0");
+     } catch (PDOException $e) {}
+
+     $db->exec("CREATE TABLE IF NOT EXISTS feriados (
         fecha DATE PRIMARY KEY,
         nombre VARCHAR(255) NOT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -351,6 +361,8 @@ switch ($action) {
         $fecha_inicio = trim($input['fecha_inicio'] ?? '03-01');
         $fecha_fin = trim($input['fecha_fin'] ?? '12-01');
         $horas_diarias = floatval($input['horas_diarias'] ?? 8.00);
+        $descuento_fines_semana = intval($input['descuento_fines_semana'] ?? 0);
+        $descuento_feriados = intval($input['descuento_feriados'] ?? 0);
 
         if ($year < 2000 || $year > 2100) {
             sendResponse(['success' => false, 'error' => 'Año no válido'], 400);
@@ -362,10 +374,10 @@ switch ($action) {
         try {
             // ON DUPLICATE KEY UPDATE or replace into
             $stmt = $db->prepare("
-                REPLACE INTO configuracion_anual (year, fecha_inicio, fecha_fin, horas_diarias) 
-                VALUES (?, ?, ?, ?)
+                REPLACE INTO configuracion_anual (year, fecha_inicio, fecha_fin, horas_diarias, descuento_fines_semana, descuento_feriados) 
+                VALUES (?, ?, ?, ?, ?, ?)
             ");
-            $stmt->execute([$year, $fecha_inicio, $fecha_fin, $horas_diarias]);
+            $stmt->execute([$year, $fecha_inicio, $fecha_fin, $horas_diarias, $descuento_fines_semana, $descuento_feriados]);
             sendResponse(['success' => true]);
         } catch (Exception $e) {
             sendErrorResponse($e);
@@ -631,16 +643,42 @@ switch ($action) {
             $current_year = intval(date('Y'));
             $today_str = date('Y-m-d');
             
-            if ($year === $current_year) {
-                if ($today_str < $start_date_str) {
-                    $available_days = 0;
-                } elseif ($today_str > $end_date_str) {
-                    $available_days = $getNetworkDays($start_date_str, $end_date_str);
+            $desc_w = $config ? intval($config['descuento_fines_semana']) : 0;
+            $desc_h = $config ? intval($config['descuento_feriados']) : 0;
+
+            if ($desc_w > 0 || $desc_h > 0) {
+                // Manual overrides logic
+                $start_dt = new DateTime($start_date_str);
+                $end_dt = new DateTime($end_date_str);
+                $total_days = intval($start_dt->diff($end_dt)->format('%a')) + 1;
+
+                if ($year === $current_year) {
+                    if ($today_str < $start_date_str) {
+                        $available_days = 0;
+                    } elseif ($today_str > $end_date_str) {
+                        $available_days = $total_days - $desc_w - $desc_h;
+                    } else {
+                        $today_dt = new DateTime($today_str);
+                        $days_passed = intval($start_dt->diff($today_dt)->format('%a')) + 1;
+                        $factor = $days_passed / $total_days;
+                        $available_days = $days_passed - (($desc_w + $desc_h) * $factor);
+                    }
                 } else {
-                    $available_days = $getNetworkDays($start_date_str, $today_str);
+                    $available_days = $total_days - $desc_w - $desc_h;
                 }
             } else {
-                $available_days = $getNetworkDays($start_date_str, $end_date_str);
+                // Automatic logic
+                if ($year === $current_year) {
+                    if ($today_str < $start_date_str) {
+                        $available_days = 0;
+                    } elseif ($today_str > $end_date_str) {
+                        $available_days = $getNetworkDays($start_date_str, $end_date_str);
+                    } else {
+                        $available_days = $getNetworkDays($start_date_str, $today_str);
+                    }
+                } else {
+                    $available_days = $getNetworkDays($start_date_str, $end_date_str);
+                }
             }
             
             $available_hours = $available_days * $hours_per_day;
