@@ -579,6 +579,11 @@ async function loadDashboard() {
         document.getElementById('kpi-total-uso').textContent = Math.round(stats.kpi_total_uso || 0) + ' hrs';
         document.getElementById('kpi-total-voluntario').textContent = Math.round(stats.kpi_total_voluntario || 0) + ' hrs';
         
+        const alumnosHoraEl = document.getElementById('kpi-alumnos-hora');
+        if (alumnosHoraEl) {
+            alumnosHoraEl.textContent = parseFloat(stats.kpi_alumnos_por_hora || 0).toFixed(1);
+        }
+        
         const ext = stats.externo_totales;
         const extValEl = document.getElementById('kpi-total-externo');
         const extSubtextEl = document.getElementById('kpi-externo-subtext');
@@ -1077,6 +1082,8 @@ async function loadAreaParameters() {
             renderConfigParams();
             // Populate forms select dropdowns
             populateModalDropdowns();
+            // Populate student datalist for autocomplete
+            populateStudentDatalist(data.estudiantes || []);
         }
     } catch (e) {
         console.error("Error al cargar parámetros del área", e);
@@ -1180,6 +1187,18 @@ function populateModalDropdowns() {
             opt.textContent = a.nombre;
             select.appendChild(opt);
         });
+    });
+}
+
+// Populate student datalist for autocomplete
+function populateStudentDatalist(students) {
+    const datalist = document.getElementById('student-names');
+    if (!datalist) return;
+    datalist.innerHTML = '';
+    students.forEach(student => {
+        const option = document.createElement('option');
+        option.value = student;
+        datalist.appendChild(option);
     });
 }
 

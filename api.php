@@ -414,7 +414,17 @@ switch ($action) {
             $stmt->execute([$area]);
             $asignaturas = $stmt->fetchAll();
 
-            sendResponse(['success' => true, 'cursos' => $cursos, 'asignaturas' => $asignaturas]);
+            // Fetch unique student names for autocomplete/suggestions
+            $stmt = $db->prepare("SELECT DISTINCT nombre_estudiante FROM asistencia_voluntaria WHERE area_id = ? AND nombre_estudiante IS NOT NULL AND nombre_estudiante != '' ORDER BY nombre_estudiante ASC");
+            $stmt->execute([$area]);
+            $estudiantes = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            sendResponse([
+                'success' => true,
+                'cursos' => $cursos,
+                'asignaturas' => $asignaturas,
+                'estudiantes' => $estudiantes
+            ]);
         } catch (Exception $e) {
             sendErrorResponse($e);
         }
@@ -591,6 +601,11 @@ switch ($action) {
             $stmt = $db->prepare("SELECT SUM(cantidad_horas) FROM uso_simulador WHERE area_id = ? AND DATE_FORMAT(fecha, '%Y') = ?");
             $stmt->execute([$area, $year_str]);
             $stats['kpi_total_uso'] = floatval($stmt->fetchColumn());
+
+            $stmt = $db->prepare("SELECT SUM(cantidad_alumnos) FROM uso_simulador WHERE area_id = ? AND DATE_FORMAT(fecha, '%Y') = ?");
+            $stmt->execute([$area, $year_str]);
+            $total_alumnos = intval($stmt->fetchColumn());
+            $stats['kpi_alumnos_por_hora'] = $stats['kpi_total_uso'] > 0 ? round($total_alumnos / $stats['kpi_total_uso'], 2) : 0.00;
 
             $stmt = $db->prepare("SELECT SUM(horas) FROM asistencia_voluntaria WHERE area_id = ? AND DATE_FORMAT(fecha, '%Y') = ?");
             $stmt->execute([$area, $year_str]);

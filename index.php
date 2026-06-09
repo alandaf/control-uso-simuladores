@@ -164,6 +164,16 @@ if (empty($_SESSION['csrf_token'])) {
                         <i aria-hidden="true" data-lucide="dollar-sign"></i>
                     </div>
                 </div>
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h4>Promedio Alumnos/Hora</h4>
+                        <div class="kpi-value" id="kpi-alumnos-hora">0.0</div>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Uso general anual</p>
+                    </div>
+                    <div class="kpi-icon orange" style="color:#a78bfa; background-color:rgba(167, 139, 250, 0.12);">
+                        <i aria-hidden="true" data-lucide="users"></i>
+                    </div>
+                </div>
             </div>
 
             <!-- Charts and Rankings Grid -->
@@ -475,7 +485,7 @@ if (empty($_SESSION['csrf_token'])) {
                             <label>Categoría</label>
                             <select name="categoria" required>
                                 <option value="">Seleccione...</option>
-                                <option value="Academia">Academia</option>
+                                <option value="Academia" selected>Academia</option>
                                 <option value="Ex Estudiante">Ex Estudiante</option>
                                 <option value="Ex Estudiante 2025">Ex Estudiante 2025</option>
                                 <option value="Personas externas">Personas externas</option>
@@ -516,7 +526,8 @@ if (empty($_SESSION['csrf_token'])) {
                     <div class="form-grid">
                         <div class="form-group full-width">
                             <label>Nombre y Apellido del Estudiante</label>
-                            <input type="text" name="nombre_estudiante" required placeholder="Ej: Juan Pérez">
+                            <input type="text" name="nombre_estudiante" required placeholder="Ej: Juan Pérez" list="student-names">
+                            <datalist id="student-names"></datalist>
                         </div>
                         <div class="form-group">
                             <label>Fecha</label>
