@@ -626,7 +626,7 @@ switch ($action) {
                        COALESCE(NULLIF(examen_cimar, ''), 'Pendiente') as status, 
                        COUNT(*) as qty
                 FROM entrenamiento_externo
-                WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') IS NOT NULL
+                WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') >= 2000
                 GROUP BY year, status
                 ORDER BY year ASC
             ");
