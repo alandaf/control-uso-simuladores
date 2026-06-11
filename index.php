@@ -215,25 +215,25 @@ if (empty($_SESSION['csrf_token'])) {
             </div>
 
             <div class="dashboard-grid">
-                <div class="chart-card">
+                <div class="chart-card" id="card-voluntarios-mensual-container" style="grid-column: 1 / -1;">
                     <h3><i aria-hidden="true" data-lucide="line-chart"></i> Asistencia Voluntaria de Estudiantes Mensual</h3>
                     <div class="chart-container">
                         <canvas id="chart-voluntarios"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="chart-card">
+                    <h3><i aria-hidden="true" data-lucide="award"></i> Rendimiento de Exámenes CIMAR (Entrenamiento Externo)</h3>
+                    <div class="chart-container" style="display: flex; align-items: center; justify-content: center; height: 280px; position: relative;">
+                        <canvas id="chart-cimar" style="max-width: 500px;"></canvas>
                     </div>
                 </div>
                 <div class="chart-card" id="card-comparativa-anual-container">
                     <h3><i aria-hidden="true" data-lucide="bar-chart-2"></i> Comparación de Horas de Utilización por Año</h3>
                     <div class="chart-container">
                         <canvas id="chart-comparativa-anual"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-grid">
-                <div class="chart-card" style="grid-column: 1 / -1;">
-                    <h3><i aria-hidden="true" data-lucide="award"></i> Rendimiento de Exámenes CIMAR (Entrenamiento Externo)</h3>
-                    <div class="chart-container" style="display: flex; align-items: center; justify-content: center; height: 280px; position: relative;">
-                        <canvas id="chart-cimar" style="max-width: 500px;"></canvas>
                     </div>
                 </div>
             </div>
