@@ -515,12 +515,14 @@ header {
     border-radius: var(--border-radius);
     overflow: hidden;
     width: 100%;
+    max-width: 100%;
     min-width: 0;
 }
 
 .table-responsive {
     overflow-x: auto;
     width: 100%;
+    max-width: 100%;
 }
 
 table {
