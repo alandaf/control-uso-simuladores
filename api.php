@@ -600,33 +600,76 @@ switch ($action) {
             $stmt->execute([':area' => $area, ':year' => $year_str]);
             $stats['horas_categoria'] = $stmt->fetchAll();
 
-            // 6. Ingresos e información de entrenamiento externo
+            // 6. Ingresos e información de entrenamiento externo (consolidando alumnos únicos)
             $stmt = $db->prepare("
-                SELECT SUM(monto_cancelado) as total_revenue, SUM(cantidad_horas) as total_hours, COUNT(*) as total_students,
-                       SUM(CASE WHEN examen_cimar = 'Aprobado' THEN 1 ELSE 0 END) as total_approved,
-                       SUM(CASE WHEN examen_cimar IS NULL OR examen_cimar = '' OR examen_cimar = 'Pendiente' THEN 1 ELSE 0 END) as total_pending
+                SELECT SUM(monto_cancelado) as total_revenue, SUM(cantidad_horas) as total_hours
                 FROM entrenamiento_externo 
                 WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year
             ");
             $stmt->execute([':area' => $area, ':year' => $year_str]);
-            $stats['externo_totales'] = $stmt->fetch();
+            $totales_basics = $stmt->fetch();
+
+            $stmt_unique = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_students,
+                    SUM(CASE WHEN status_final = 'Aprobado' THEN 1 ELSE 0 END) as total_approved,
+                    SUM(CASE WHEN status_final = 'Pendiente' THEN 1 ELSE 0 END) as total_pending
+                FROM (
+                    SELECT 
+                        CASE 
+                            WHEN SUM(CASE WHEN examen_cimar = 'Aprobado' THEN 1 ELSE 0 END) > 0 THEN 'Aprobado'
+                            WHEN SUM(CASE WHEN examen_cimar = 'Reprobado' THEN 1 ELSE 0 END) > 0 THEN 'Reprobado'
+                            ELSE 'Pendiente'
+                        END as status_final
+                    FROM entrenamiento_externo
+                    WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year AND nombre_alumno IS NOT NULL AND nombre_alumno != ''
+                    GROUP BY nombre_alumno
+                ) as unique_students
+            ");
+            $stmt_unique->execute([':area' => $area, ':year' => $year_str]);
+            $totales_unique = $stmt_unique->fetch();
+
+            $stats['externo_totales'] = [
+                'total_revenue' => $totales_basics['total_revenue'] ?? 0,
+                'total_hours' => $totales_basics['total_hours'] ?? 0,
+                'total_students' => $totales_unique['total_students'] ?? 0,
+                'total_approved' => $totales_unique['total_approved'] ?? 0,
+                'total_pending' => $totales_unique['total_pending'] ?? 0
+            ];
 
             $stmt = $db->prepare("
-                SELECT COALESCE(NULLIF(examen_cimar, ''), 'Pendiente') as status, COUNT(*) as qty
-                FROM entrenamiento_externo
-                WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year
-                GROUP BY status
+                SELECT status_final, COUNT(*) as qty
+                FROM (
+                    SELECT 
+                        CASE 
+                            WHEN SUM(CASE WHEN examen_cimar = 'Aprobado' THEN 1 ELSE 0 END) > 0 THEN 'Aprobado'
+                            WHEN SUM(CASE WHEN examen_cimar = 'Reprobado' THEN 1 ELSE 0 END) > 0 THEN 'Reprobado'
+                            ELSE 'Pendiente'
+                        END as status_final
+                    FROM entrenamiento_externo
+                    WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year AND nombre_alumno IS NOT NULL AND nombre_alumno != ''
+                    GROUP BY nombre_alumno
+                ) as unique_students
+                GROUP BY status_final
             ");
             $stmt->execute([':area' => $area, ':year' => $year_str]);
             $stats['cimar_stats'] = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-            // Fetch cimar exam status comparison across all registered years
+            // Fetch cimar exam status comparison across all registered years, grouping by unique students yearly
             $stmt = $db->prepare("
-                SELECT DATE_FORMAT(fecha, '%Y') as year, 
-                       COALESCE(NULLIF(examen_cimar, ''), 'Pendiente') as status, 
-                       COUNT(*) as qty
-                FROM entrenamiento_externo
-                WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') >= 2000
+                SELECT year, status_final as status, COUNT(*) as qty
+                FROM (
+                    SELECT 
+                        DATE_FORMAT(fecha, '%Y') as year,
+                        CASE 
+                            WHEN SUM(CASE WHEN examen_cimar = 'Aprobado' THEN 1 ELSE 0 END) > 0 THEN 'Aprobado'
+                            WHEN SUM(CASE WHEN examen_cimar = 'Reprobado' THEN 1 ELSE 0 END) > 0 THEN 'Reprobado'
+                            ELSE 'Pendiente'
+                        END as status_final
+                    FROM entrenamiento_externo
+                    WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') >= 2000 AND nombre_alumno IS NOT NULL AND nombre_alumno != ''
+                    GROUP BY year, nombre_alumno
+                ) as unique_students_yearly
                 GROUP BY year, status
                 ORDER BY year ASC
             ");
