@@ -406,6 +406,8 @@ header {
     flex-direction: column;
     gap: 1.5rem;
     animation: fadeIn 0.3s ease;
+    width: 100%;
+    min-width: 0;
 }
 
 .view-container.active {
@@ -512,6 +514,8 @@ header {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     overflow: hidden;
+    width: 100%;
+    min-width: 0;
 }
 
 .table-responsive {
