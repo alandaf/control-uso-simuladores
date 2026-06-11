@@ -698,6 +698,7 @@ async function loadDashboard() {
         renderAsignaturasChart(stats.horas_asignatura);
         renderExternosIngresosChart(stats.externo_mensual);
         renderComparativaAnualChart(stats.comparativa_anual);
+        renderCimarStatsChart(stats.cimar_stats);
 
     } catch (e) {
         showToast('Error de conexión con la API', 'danger');
@@ -944,6 +945,62 @@ function renderExternosIngresosChart(data = []) {
         }
     });
     state.charts['ingresos'] = chart;
+}
+
+// Chart 4.5: Exámenes CIMAR (Rendimiento)
+function renderCimarStatsChart(cimarData = {}) {
+    prepareChartCanvas('cimar');
+    const canvasEl = document.getElementById('chart-cimar');
+    if (!canvasEl) return;
+    const ctx = canvasEl.getContext('2d');
+
+    const labels = ['Aprobado', 'Reprobado', 'Pendiente'];
+    const values = [
+        parseInt(cimarData['Aprobado'] || 0),
+        parseInt(cimarData['Reprobado'] || 0),
+        parseInt(cimarData['Pendiente'] || 0)
+    ];
+
+    const hasData = values.some(v => v > 0);
+
+    const chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: hasData ? values : [0, 0, 1],
+                backgroundColor: [
+                    '#38bdf8', // Aprobado (Sky Blue)
+                    '#f87171', // Reprobado (Red)
+                    'rgba(255, 255, 255, 0.15)' // Pendiente (Muted white/gray)
+                ],
+                borderWidth: 1,
+                borderColor: '#121620'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { color: '#eef1f6', font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            if (!hasData) return ' Sin datos registrados';
+                            const value = context.raw;
+                            const total = values.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return ` ${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    state.charts['cimar'] = chart;
 }
 
 // Load List/Table Data

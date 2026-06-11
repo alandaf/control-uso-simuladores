@@ -611,6 +611,15 @@ switch ($action) {
             $stats['externo_totales'] = $stmt->fetch();
 
             $stmt = $db->prepare("
+                SELECT examen_cimar, COUNT(*) as qty
+                FROM entrenamiento_externo
+                WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year AND examen_cimar IS NOT NULL
+                GROUP BY examen_cimar
+            ");
+            $stmt->execute([':area' => $area, ':year' => $year_str]);
+            $stats['cimar_stats'] = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+            $stmt = $db->prepare("
                 SELECT DATE_FORMAT(fecha, '%Y') as year, DATE_FORMAT(fecha, '%m') as month, SUM(monto_cancelado) as total_revenue, SUM(cantidad_horas) as total_hours 
                 FROM entrenamiento_externo 
                 WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year
