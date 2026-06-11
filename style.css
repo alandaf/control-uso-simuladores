@@ -159,6 +159,7 @@ aside {
 main {
     margin-left: var(--sidebar-width);
     flex-grow: 1;
+    min-width: 0; /* Prevents stretching in flex layout, allowing table horizontal scroll */
     padding: 2.5rem;
     min-height: 100vh;
     display: flex;
@@ -196,6 +197,13 @@ header {
     padding: 0.35rem;
     border-radius: 12px;
     gap: 0.25rem;
+    overflow-x: auto; /* Allow horizontal scroll if tabs overflow intermediate screens */
+    white-space: nowrap;
+    max-width: 100%;
+    scrollbar-width: none; /* Hide scrollbar for standard premium look */
+}
+.tabs::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Webkit browsers */
 }
 
 .tab-btn {
@@ -212,6 +220,7 @@ header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-shrink: 0; /* Prevent tabs text from wrapping/shrinking */
 }
 
 .tab-btn:hover {
