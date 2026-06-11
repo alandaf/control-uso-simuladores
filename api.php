@@ -604,7 +604,7 @@ switch ($action) {
             $stmt = $db->prepare("
                 SELECT SUM(monto_cancelado) as total_revenue, SUM(cantidad_horas) as total_hours, COUNT(*) as total_students,
                        SUM(CASE WHEN examen_cimar = 'Aprobado' THEN 1 ELSE 0 END) as total_approved,
-                       SUM(CASE WHEN examen_cimar = 'Pendiente' THEN 1 ELSE 0 END) as total_pending
+                       SUM(CASE WHEN examen_cimar IS NULL OR examen_cimar = '' OR examen_cimar = 'Pendiente' THEN 1 ELSE 0 END) as total_pending
                 FROM entrenamiento_externo 
                 WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year
             ");
@@ -612,10 +612,10 @@ switch ($action) {
             $stats['externo_totales'] = $stmt->fetch();
 
             $stmt = $db->prepare("
-                SELECT examen_cimar, COUNT(*) as qty
+                SELECT COALESCE(NULLIF(examen_cimar, ''), 'Pendiente') as status, COUNT(*) as qty
                 FROM entrenamiento_externo
-                WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year AND examen_cimar IS NOT NULL
-                GROUP BY examen_cimar
+                WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year
+                GROUP BY status
             ");
             $stmt->execute([':area' => $area, ':year' => $year_str]);
             $stats['cimar_stats'] = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
