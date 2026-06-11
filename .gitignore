@@ -4,6 +4,8 @@
 *.sql
 *.xlsx
 *.zip
+AUDITORIA.md
+RECUPERACION_CLAVE.md
 
 # Ignore temporary/development scratch folders
 scratch/
