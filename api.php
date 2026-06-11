@@ -620,6 +620,19 @@ switch ($action) {
             $stmt->execute([':area' => $area, ':year' => $year_str]);
             $stats['cimar_stats'] = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
+            // Fetch cimar exam status comparison across all registered years
+            $stmt = $db->prepare("
+                SELECT DATE_FORMAT(fecha, '%Y') as year, 
+                       COALESCE(NULLIF(examen_cimar, ''), 'Pendiente') as status, 
+                       COUNT(*) as qty
+                FROM entrenamiento_externo
+                WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') IS NOT NULL
+                GROUP BY year, status
+                ORDER BY year ASC
+            ");
+            $stmt->execute([':area' => $area]);
+            $stats['cimar_comparativa'] = $stmt->fetchAll();
+
             $stmt = $db->prepare("
                 SELECT DATE_FORMAT(fecha, '%Y') as year, DATE_FORMAT(fecha, '%m') as month, SUM(monto_cancelado) as total_revenue, SUM(cantidad_horas) as total_hours 
                 FROM entrenamiento_externo 

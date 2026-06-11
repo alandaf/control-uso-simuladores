@@ -215,10 +215,16 @@ if (empty($_SESSION['csrf_token'])) {
             </div>
 
             <div class="dashboard-grid">
-                <div class="chart-card" id="card-voluntarios-mensual-container" style="grid-column: 1 / -1;">
+                <div class="chart-card" id="card-voluntarios-mensual-container">
                     <h3><i aria-hidden="true" data-lucide="line-chart"></i> Asistencia Voluntaria de Estudiantes Mensual</h3>
                     <div class="chart-container">
                         <canvas id="chart-voluntarios"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card" id="card-comparativa-anual-container">
+                    <h3><i aria-hidden="true" data-lucide="bar-chart-2"></i> Comparación de Horas de Utilización por Año</h3>
+                    <div class="chart-container">
+                        <canvas id="chart-comparativa-anual"></canvas>
                     </div>
                 </div>
             </div>
@@ -230,10 +236,10 @@ if (empty($_SESSION['csrf_token'])) {
                         <canvas id="chart-cimar" style="max-width: 500px;"></canvas>
                     </div>
                 </div>
-                <div class="chart-card" id="card-comparativa-anual-container">
-                    <h3><i aria-hidden="true" data-lucide="bar-chart-2"></i> Comparación de Horas de Utilización por Año</h3>
+                <div class="chart-card" id="card-cimar-comparativa-container">
+                    <h3><i aria-hidden="true" data-lucide="bar-chart-3"></i> Comparativa de Exámenes CIMAR por Año</h3>
                     <div class="chart-container">
-                        <canvas id="chart-comparativa-anual"></canvas>
+                        <canvas id="chart-cimar-comparativa"></canvas>
                     </div>
                 </div>
             </div>

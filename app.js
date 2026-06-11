@@ -699,6 +699,7 @@ async function loadDashboard() {
         renderExternosIngresosChart(stats.externo_mensual);
         renderComparativaAnualChart(stats.comparativa_anual);
         renderCimarStatsChart(stats.cimar_stats);
+        renderCimarComparativaChart(stats.cimar_comparativa);
 
     } catch (e) {
         showToast('Error de conexión con la API', 'danger');
@@ -1001,6 +1002,82 @@ function renderCimarStatsChart(cimarData = {}) {
         }
     });
     state.charts['cimar'] = chart;
+}
+
+// Chart 4.6: Comparativa de Exámenes CIMAR por Año
+function renderCimarComparativaChart(comparativaData = []) {
+    prepareChartCanvas('cimar_comparativa');
+    const canvasEl = document.getElementById('chart-cimar-comparativa');
+    if (!canvasEl) return;
+    const ctx = canvasEl.getContext('2d');
+
+    const yearsMap = {};
+    comparativaData.forEach(d => {
+        if (!yearsMap[d.year]) {
+            yearsMap[d.year] = { 'Aprobado': 0, 'Reprobado': 0, 'Pendiente': 0 };
+        }
+        yearsMap[d.year][d.status] = parseInt(d.qty || 0);
+    });
+
+    const sortedYears = Object.keys(yearsMap).sort();
+
+    const aprobados = sortedYears.map(y => yearsMap[y]['Aprobado']);
+    const reprobados = sortedYears.map(y => yearsMap[y]['Reprobado']);
+    const pendientes = sortedYears.map(y => yearsMap[y]['Pendiente']);
+
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sortedYears.length ? sortedYears : ['Sin datos'],
+            datasets: [
+                {
+                    label: 'Aprobado',
+                    data: aprobados.length ? aprobados : [0],
+                    backgroundColor: '#38bdf8',
+                    borderColor: '#38bdf8',
+                    borderWidth: 1.5,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Reprobado',
+                    data: reprobados.length ? reprobados : [0],
+                    backgroundColor: '#f87171',
+                    borderColor: '#f87171',
+                    borderWidth: 1.5,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Pendiente',
+                    data: pendientes.length ? pendientes : [0],
+                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                    borderColor: 'rgba(255, 255, 255, 0.4)',
+                    borderWidth: 1.5,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: '#eef1f6', font: { size: 10 } }
+                }
+            },
+            scales: {
+                y: { 
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+                    ticks: { color: '#9ca3af', precision: 0 } 
+                },
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { color: '#9ca3af' } 
+                }
+            }
+        }
+    });
+    state.charts['cimar_comparativa'] = chart;
 }
 
 // Load List/Table Data
