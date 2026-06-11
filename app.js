@@ -646,10 +646,10 @@ async function loadDashboard() {
                 const hrs = Math.round(parseFloat(ext.total_hours || 0));
                 const students = ext.total_students || 0;
                 extHoursValEl.textContent = `${hrs} hrs`;
-                extHoursSubtextEl.innerHTML = `por <strong>${students}</strong> alumnos / <strong>${ext.total_approved || 0}</strong> aprobados`;
+                extHoursSubtextEl.innerHTML = `por <strong>${students}</strong> alumnos / <strong>${ext.total_approved || 0}</strong> aprobados / <strong>${ext.total_pending || 0}</strong> pendientes`;
             } else {
                 extHoursValEl.textContent = '0 hrs';
-                extHoursSubtextEl.textContent = 'por 0 alumnos';
+                extHoursSubtextEl.textContent = 'por 0 alumnos / 0 aprobados / 0 pendientes';
             }
         }
 

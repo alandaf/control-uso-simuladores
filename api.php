@@ -603,7 +603,8 @@ switch ($action) {
             // 6. Ingresos e información de entrenamiento externo
             $stmt = $db->prepare("
                 SELECT SUM(monto_cancelado) as total_revenue, SUM(cantidad_horas) as total_hours, COUNT(*) as total_students,
-                       SUM(CASE WHEN examen_cimar = 'Aprobado' THEN 1 ELSE 0 END) as total_approved
+                       SUM(CASE WHEN examen_cimar = 'Aprobado' THEN 1 ELSE 0 END) as total_approved,
+                       SUM(CASE WHEN examen_cimar = 'Pendiente' THEN 1 ELSE 0 END) as total_pending
                 FROM entrenamiento_externo 
                 WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year
             ");
