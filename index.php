@@ -63,43 +63,48 @@ if (empty($_SESSION['csrf_token'])) {
     <!-- Main Content Panel -->
     <main>
         <!-- Top App Bar -->
-        <header>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <button class="hamburger"><i aria-hidden="true" data-lucide="menu"></i></button>
-                <div class="header-title">
-                    <h2>Simulador de Puente</h2>
-                    <p>Control de horas de navegación y entrenamientos</p>
+        <header style="display: flex; flex-direction: column; align-items: stretch; gap: 1.25rem;">
+            <!-- Row 1: Title & Actions -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="hamburger"><i aria-hidden="true" data-lucide="menu"></i></button>
+                    <div class="header-title">
+                        <h2>Simulador de Puente</h2>
+                        <p>Control de horas de navegación y entrenamientos</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <!-- Filtro de Año -->
+                    <div style="display: flex; align-items: center; gap: 0.5rem; background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 12px;">
+                        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">Año:</label>
+                        <select id="year-filter" style="background: none; border: none; color: var(--text-primary); font-size: 0.85rem; font-weight: 600; outline: none; cursor: pointer; padding-right: 0.5rem;">
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+
+                    <!-- Selector de Tamaño de Letra -->
+                    <div style="display: flex; align-items: center; gap: 0.25rem; background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 0.35rem 0.6rem; border-radius: 12px;">
+                        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; margin-right: 0.25rem;">Texto:</label>
+                        <button id="btn-font-decrease" class="action-icon-btn" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; padding:0;" title="Disminuir letra"><i aria-hidden="true" data-lucide="minus" style="width:14px; height:14px;"></i></button>
+                        <button id="btn-font-increase" class="action-icon-btn" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; padding:0;" title="Aumentar letra"><i aria-hidden="true" data-lucide="plus" style="width:14px; height:14px;"></i></button>
+                    </div>
+
+                    <!-- Botón de Autenticación -->
+                    <?php if ($logged_in): ?>
+                    <button id="btn-logout" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; height: 35px; line-height: 1.2;">
+                        <i aria-hidden="true" data-lucide="log-out" style="width:14px; height:14px;"></i> Salir
+                    </button>
+                    <?php else: ?>
+                    <button id="btn-login-open" class="btn btn-primary" style="padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; height: 35px; line-height: 1.2;">
+                        <i aria-hidden="true" data-lucide="log-in" style="width:14px; height:14px;"></i> Ingresar
+                    </button>
+                    <?php endif; ?>
                 </div>
             </div>
-            
-            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                <!-- Filtro de Año -->
-                <div style="display: flex; align-items: center; gap: 0.5rem; background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 12px;">
-                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">Año:</label>
-                    <select id="year-filter" style="background: none; border: none; color: var(--text-primary); font-size: 0.85rem; font-weight: 600; outline: none; cursor: pointer; padding-right: 0.5rem;">
-                        <!-- Dynamically populated -->
-                    </select>
-                </div>
 
-                <!-- Selector de Tamaño de Letra -->
-                <div style="display: flex; align-items: center; gap: 0.25rem; background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 0.35rem 0.6rem; border-radius: 12px;">
-                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; margin-right: 0.25rem;">Texto:</label>
-                    <button id="btn-font-decrease" class="action-icon-btn" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; padding:0;" title="Disminuir letra"><i aria-hidden="true" data-lucide="minus" style="width:14px; height:14px;"></i></button>
-                    <button id="btn-font-increase" class="action-icon-btn" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; padding:0;" title="Aumentar letra"><i aria-hidden="true" data-lucide="plus" style="width:14px; height:14px;"></i></button>
-                </div>
-
-                <!-- Botón de Autenticación -->
-                <?php if ($logged_in): ?>
-                <button id="btn-logout" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; height: 35px; line-height: 1.2;">
-                    <i aria-hidden="true" data-lucide="log-out" style="width:14px; height:14px;"></i> Salir
-                </button>
-                <?php else: ?>
-                <button id="btn-login-open" class="btn btn-primary" style="padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; height: 35px; line-height: 1.2;">
-                    <i aria-hidden="true" data-lucide="log-in" style="width:14px; height:14px;"></i> Ingresar
-                </button>
-                <?php endif; ?>
-
-                <!-- Views Tab Navigation -->
+            <!-- Row 2: Navigation Tabs -->
+            <div class="tabs-container" style="width: 100%;">
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="dashboard"><i aria-hidden="true" data-lucide="layout-dashboard"></i>Estadísticas</button>
                     <?php if ($logged_in): ?>

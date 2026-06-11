@@ -192,18 +192,13 @@ header {
 
 .tabs {
     display: flex;
+    flex-wrap: wrap;
     background-color: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
     padding: 0.35rem;
     border-radius: 12px;
     gap: 0.25rem;
-    overflow-x: auto; /* Allow horizontal scroll if tabs overflow intermediate screens */
-    white-space: nowrap;
     max-width: 100%;
-    scrollbar-width: none; /* Hide scrollbar for standard premium look */
-}
-.tabs::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Webkit browsers */
 }
 
 .tab-btn {
