@@ -435,11 +435,17 @@ switch ($action) {
             $stmt->execute([$area]);
             $estudiantes = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
+            // Fetch unique external training students and details
+            $stmt = $db->prepare("SELECT nombre_alumno, run, telefono, email, objeto_entrenamiento, procedencia FROM entrenamiento_externo WHERE area_id = ? AND nombre_alumno IS NOT NULL AND nombre_alumno != '' GROUP BY nombre_alumno ORDER BY nombre_alumno ASC");
+            $stmt->execute([$area]);
+            $alumnos_externos = $stmt->fetchAll();
+
             sendResponse([
                 'success' => true,
                 'cursos' => $cursos,
                 'asignaturas' => $asignaturas,
-                'estudiantes' => $estudiantes
+                'estudiantes' => $estudiantes,
+                'alumnos_externos' => $alumnos_externos
             ]);
         } catch (Exception $e) {
             sendErrorResponse($e);
@@ -596,7 +602,8 @@ switch ($action) {
 
             // 6. Ingresos e información de entrenamiento externo
             $stmt = $db->prepare("
-                SELECT SUM(monto_cancelado) as total_revenue, SUM(cantidad_horas) as total_hours, COUNT(*) as total_students 
+                SELECT SUM(monto_cancelado) as total_revenue, SUM(cantidad_horas) as total_hours, COUNT(*) as total_students,
+                       SUM(CASE WHEN examen_cimar = 'Aprobado' THEN 1 ELSE 0 END) as total_approved
                 FROM entrenamiento_externo 
                 WHERE area_id = :area AND DATE_FORMAT(fecha, '%Y') = :year
             ");
@@ -798,6 +805,69 @@ switch ($action) {
         }
         break;
 
+    case 'export_excel':
+        checkAuth();
+        $area = $_GET['area'] ?? '';
+        $type = $_GET['type'] ?? '';
+        $year = intval($_GET['year'] ?? 0);
+
+        if (!validateArea($area)) {
+            sendResponse(['success' => false, 'error' => 'Área no válida'], 400);
+        }
+
+        try {
+            $where_clause = " WHERE area_id = :area ";
+            $params = [':area' => $area];
+            if ($year > 0) {
+                $where_clause .= " AND DATE_FORMAT(fecha, '%Y') = :year ";
+                $params[':year'] = strval($year);
+            }
+
+            if ($type === 'uso') {
+                $stmt = $db->prepare("SELECT fecha, comex, finex, curso, asignatura, tema, cantidad_alumnos, horas_pedagogicas, categoria, observaciones FROM uso_simulador " . $where_clause . " ORDER BY fecha DESC");
+                $stmt->execute($params);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $filename = "Uso_General_" . $area . "_" . ($year ?: "Todos") . ".csv";
+                $headers = ["Fecha", "Hora Inicio", "Hora Fin", "Curso", "Asignatura", "Tema", "Alumnos", "Horas Pedagógicas", "Categoría", "Observaciones"];
+            } elseif ($type === 'voluntario') {
+                $stmt = $db->prepare("SELECT fecha, comex, finex, curso, asignatura, tema, nombre_estudiante, horas FROM asistencia_voluntaria " . $where_clause . " ORDER BY fecha DESC");
+                $stmt->execute($params);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $filename = "Asistencia_Voluntaria_" . $area . "_" . ($year ?: "Todos") . ".csv";
+                $headers = ["Fecha", "Hora Inicio", "Hora Fin", "Curso", "Asignatura", "Tema", "Estudiante", "Horas Pedagógicas"];
+            } elseif ($type === 'externo') {
+                $stmt = $db->prepare("SELECT fecha, nombre_alumno, run, telefono, email, cantidad_horas, objeto_entrenamiento, procedencia, monto_cancelado, examen_cimar FROM entrenamiento_externo " . $where_clause . " ORDER BY fecha DESC");
+                $stmt->execute($params);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $filename = "Entrenamiento_Externo_" . $area . "_" . ($year ?: "Todos") . ".csv";
+                $headers = ["Fecha", "Nombre Alumno", "RUN", "Teléfono", "Email", "Horas Pedagógicas", "Objeto Entrenamiento", "Procedencia", "Monto Cancelado ($)", "Examen CIMAR"];
+            } else {
+                sendResponse(['success' => false, 'error' => 'Tipo de exportación no válido'], 400);
+            }
+
+            // Set headers for download
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            
+            // Output UTF-8 BOM so Excel opens it with correct encoding
+            echo "\xEF\xBB\xBF";
+            
+            $output = fopen('php://output', 'w');
+            
+            // Write column headers using semicolon separator
+            fputcsv($output, $headers, ';');
+            
+            // Write data rows
+            foreach ($rows as $row) {
+                fputcsv($output, array_values($row), ';');
+            }
+            fclose($output);
+            exit();
+        } catch (Exception $e) {
+            sendResponse(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+        break;
+
     case 'create':
         checkAuth();
         $area = $_GET['area'] ?? '';
@@ -865,7 +935,7 @@ switch ($action) {
                     ':objeto_entrenamiento' => $input['objeto_entrenamiento'] ?? null,
                     ':procedencia' => $input['procedencia'] ?? null,
                     ':monto_cancelado' => floatval($input['monto_cancelado'] ?? 0.0),
-                    ':boleta' => $input['boleta'] ?? 'No',
+                    ':boleta' => 'No',
                     ':examen_cimar' => $input['examen_cimar'] ?? 'Pendiente'
                 ]);
             } else {
@@ -958,7 +1028,7 @@ switch ($action) {
                     ':objeto_entrenamiento' => $input['objeto_entrenamiento'],
                     ':procedencia' => $input['procedencia'],
                     ':monto_cancelado' => floatval($input['monto_cancelado']),
-                    ':boleta' => $input['boleta'],
+                    ':boleta' => 'No',
                     ':examen_cimar' => $input['examen_cimar']
                 ]);
             } else {

@@ -19,7 +19,8 @@ const state = {
 // Global Parameters Cache
 const areaParams = {
     cursos: [],
-    asignaturas: []
+    asignaturas: [],
+    alumnos_externos: []
 };
 
 // Helper to escape HTML characters (Anti-XSS Protection)
@@ -213,6 +214,26 @@ function initEventListeners() {
                     document.getElementById('cfg-fecha-fin').value = '12-01';
                     document.getElementById('cfg-horas-diarias').value = '8';
                     document.getElementById('cfg-dias-sin-clases').value = '0';
+                }
+            });
+        }
+    }
+
+    // Auto-populate external training form fields when selecting a trainee
+    const formExterno = document.getElementById('form-externo');
+    if (formExterno) {
+        const nombreInput = formExterno.querySelector('[name="nombre_alumno"]');
+        if (nombreInput) {
+            nombreInput.addEventListener('input', () => {
+                const nombre = nombreInput.value.trim().toLowerCase();
+                if (!nombre) return;
+                const match = areaParams.alumnos_externos?.find(a => a.nombre_alumno.toLowerCase() === nombre);
+                if (match) {
+                    formExterno.querySelector('[name="run"]').value = match.run || '';
+                    formExterno.querySelector('[name="telefono"]').value = match.telefono || '';
+                    formExterno.querySelector('[name="email"]').value = match.email || '';
+                    formExterno.querySelector('[name="objeto_entrenamiento"]').value = match.objeto_entrenamiento || '';
+                    formExterno.querySelector('[name="procedencia"]').value = match.procedencia || '';
                 }
             });
         }
@@ -625,7 +646,7 @@ async function loadDashboard() {
                 const hrs = Math.round(parseFloat(ext.total_hours || 0));
                 const students = ext.total_students || 0;
                 extHoursValEl.textContent = `${hrs} hrs`;
-                extHoursSubtextEl.innerHTML = `por <strong>${students}</strong> alumnos`;
+                extHoursSubtextEl.innerHTML = `por <strong>${students}</strong> alumnos / <strong>${ext.total_approved || 0}</strong> aprobados`;
             } else {
                 extHoursValEl.textContent = '0 hrs';
                 extHoursSubtextEl.textContent = 'por 0 alumnos';
@@ -1021,7 +1042,6 @@ function renderTableBody(type, records = []) {
                 <td>${escapeHTML(r.objeto_entrenamiento) || '-'}</td>
                 <td>${escapeHTML(r.procedencia) || '-'}</td>
                 <td>${formatCLP(r.monto_cancelado || 0)}</td>
-                <td><span class="badge ${r.boleta === 'Si' ? 'badge-success' : 'badge-neutral'}">${r.boleta || 'No'}</span></td>
                 <td><span class="badge ${badgeClass}">${escapeHTML(r.examen_cimar) || 'Pendiente'}</span></td>
             `;
         }
@@ -1097,6 +1117,7 @@ async function loadAreaParameters() {
         if (data.success) {
             areaParams.cursos = data.cursos || [];
             areaParams.asignaturas = data.asignaturas || [];
+            areaParams.alumnos_externos = data.alumnos_externos || [];
             
             // Populate config view
             renderConfigParams();
@@ -1104,6 +1125,8 @@ async function loadAreaParameters() {
             populateModalDropdowns();
             // Populate student datalist for autocomplete
             populateStudentDatalist(data.estudiantes || []);
+            // Populate external student datalist for autocomplete
+            populateExternoDatalist(areaParams.alumnos_externos);
         }
     } catch (e) {
         console.error("Error al cargar parámetros del área", e);
@@ -1221,6 +1244,18 @@ function populateStudentDatalist(students) {
     students.forEach(student => {
         const option = document.createElement('option');
         option.value = student;
+        datalist.appendChild(option);
+    });
+}
+
+// Populate external student datalist for autocomplete
+function populateExternoDatalist(alumnos) {
+    const datalist = document.getElementById('externo-names');
+    if (!datalist) return;
+    datalist.innerHTML = '';
+    alumnos.forEach(alumno => {
+        const option = document.createElement('option');
+        option.value = alumno.nombre_alumno;
         datalist.appendChild(option);
     });
 }
@@ -1351,10 +1386,7 @@ async function openEditModal(type, id) {
             const val = cells[8].textContent.replace(/[^0-9]/g, '');
             form.querySelector('[name="monto_cancelado"]').value = val ? parseFloat(val) : 0;
             
-            const hasBoleta = cells[9].textContent.trim();
-            form.querySelector('[name="boleta"]').value = hasBoleta;
-            
-            const examState = cells[10].textContent.trim();
+            const examState = cells[9].textContent.trim();
             form.querySelector('[name="examen_cimar"]').value = examState;
         }
 
@@ -1444,4 +1476,13 @@ async function deleteRecord(type, id) {
             console.error(e);
         }
     }
+}
+
+// Export data to Excel/CSV
+function exportData(type) {
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const area = state.currentArea;
+    const year = state.currentYear;
+    
+    window.location.href = `api.php?action=export_excel&type=${type}&area=${area}&year=${year}&csrf_token=${token}`;
 }

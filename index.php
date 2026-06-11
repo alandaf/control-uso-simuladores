@@ -233,7 +233,10 @@ if (empty($_SESSION['csrf_token'])) {
                     <i aria-hidden="true" data-lucide="search"></i>
                     <input type="text" id="search-uso" placeholder="Buscar por curso, asignatura, categoría...">
                 </div>
-                <div class="action-buttons">
+                <div class="action-buttons" style="display: flex; gap: 0.5rem;">
+                    <button class="btn" style="background-color: var(--success-color, #10b981); color: white;" onclick="exportData('uso')">
+                        <i aria-hidden="true" data-lucide="download"></i> Exportar Excel
+                    </button>
                     <button class="btn btn-primary" onclick="openCreateModal('uso')">
                         <i aria-hidden="true" data-lucide="plus"></i> Añadir Registro
                     </button>
@@ -273,7 +276,10 @@ if (empty($_SESSION['csrf_token'])) {
                     <i aria-hidden="true" data-lucide="search"></i>
                     <input type="text" id="search-voluntario" placeholder="Buscar por estudiante, curso, tema...">
                 </div>
-                <div class="action-buttons">
+                <div class="action-buttons" style="display: flex; gap: 0.5rem;">
+                    <button class="btn" style="background-color: var(--success-color, #10b981); color: white;" onclick="exportData('voluntario')">
+                        <i aria-hidden="true" data-lucide="download"></i> Exportar Excel
+                    </button>
                     <button class="btn btn-primary" onclick="openCreateModal('voluntario')">
                         <i aria-hidden="true" data-lucide="plus"></i> Añadir Registro
                     </button>
@@ -312,7 +318,10 @@ if (empty($_SESSION['csrf_token'])) {
                     <i aria-hidden="true" data-lucide="search"></i>
                     <input type="text" id="search-externo" placeholder="Buscar por alumno, RUN, procedencia...">
                 </div>
-                <div class="action-buttons">
+                <div class="action-buttons" style="display: flex; gap: 0.5rem;">
+                    <button class="btn" style="background-color: var(--success-color, #10b981); color: white;" onclick="exportData('externo')">
+                        <i aria-hidden="true" data-lucide="download"></i> Exportar Excel
+                    </button>
                     <button class="btn btn-primary" onclick="openCreateModal('externo')">
                         <i aria-hidden="true" data-lucide="plus"></i> Añadir Registro
                     </button>
@@ -333,7 +342,6 @@ if (empty($_SESSION['csrf_token'])) {
                                 <th>Objeto Entr.</th>
                                 <th>Procedencia</th>
                                 <th>Monto</th>
-                                <th>Boleta</th>
                                 <th>Examen CIMAR</th>
                                 <th>Acciones</th>
                             </tr>
@@ -532,7 +540,8 @@ if (empty($_SESSION['csrf_token'])) {
                         <div class="form-group full-width">
                             <label>Nombre y Apellido del Estudiante</label>
                             <input type="text" name="nombre_estudiante" required placeholder="Ej: Juan Pérez" list="student-names">
-                            <datalist id="student-names"></datalist>
+                             <datalist id="student-names"></datalist>
+                             <datalist id="externo-names"></datalist>
                         </div>
                         <div class="form-group">
                             <label>Fecha</label>
@@ -588,7 +597,7 @@ if (empty($_SESSION['csrf_token'])) {
                     <div class="form-grid">
                         <div class="form-group full-width">
                             <label>Nombre Completo Alumno</label>
-                            <input type="text" name="nombre_alumno" required placeholder="Ej: Carlos Silva">
+                             <input type="text" name="nombre_alumno" required placeholder="Ej: Carlos Silva" list="externo-names">
                         </div>
                         <div class="form-group">
                             <label>Fecha</label>
@@ -622,13 +631,7 @@ if (empty($_SESSION['csrf_token'])) {
                             <label>Monto Cancelado ($)</label>
                             <input type="number" name="monto_cancelado" min="0" required placeholder="Ej: 40000">
                         </div>
-                        <div class="form-group">
-                            <label>Boleta emitida</label>
-                            <select name="boleta">
-                                <option value="No">No</option>
-                                <option value="Si">Si</option>
-                            </select>
-                        </div>
+
                         <div class="form-group">
                             <label>Examen CIMAR</label>
                             <select name="examen_cimar">
